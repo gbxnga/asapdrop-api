@@ -133,6 +133,7 @@ class UserController extends Controller
                     $user->oauth_uid = $info->getId();
                     $user->email = $info->getEmail();
                     $user->name = $info->getName();
+                    $user->photo =  $request->photo;
 
                     $user->save();
                     
