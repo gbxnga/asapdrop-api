@@ -14,6 +14,7 @@
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/c', 'UserController@verify');
 Route::get('/migrate', function () {
     $exitCode = Artisan::call('migrate'); 
     return 'DONE'; 
