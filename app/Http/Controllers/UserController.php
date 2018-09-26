@@ -113,10 +113,8 @@ class UserController extends Controller
         //echo 'Logged in as ' . $me->getName();
         //echo $me->getEmail();
     }
-    public function register_oauth(Request $request)
+    public function login_oauth(Request $request)
     {
-
-        // check if user is already registered in
         $user = User::where('oauth_uid', $request->oauth_uid)->get()->first();
         if ($user) {
 
@@ -133,7 +131,7 @@ class UserController extends Controller
                     $user->oauth_uid = $info->getId();
                     $user->email = $info->getEmail();
                     $user->name = $info->getName();
-                    $user->photo =  $request->photo;
+                    //$user->photo =  $request->photo;
 
                     $user->save();
                     
@@ -153,11 +151,25 @@ class UserController extends Controller
 
                     $response = ['success' => true, 'data' => $user];
 
+                    return response()->json($response, 201);
+
+                    
+
                 }
 
             } catch (Exception $e) {
                 return response()->json(['success' => false, 'data' => 'Could not verify token'], 201);
             }
+        } else return response()->json(['success' => false, 'data' => 'user not registered'], 201);
+    }
+    public function register_oauth(Request $request)
+    {
+
+        // check if user is already registered in
+        $user = User::where('oauth_uid', $request->oauth_uid)->get()->first();
+        if ($user) {
+
+            return  self::login_oauth($request);
 
         } else {
             $payload = [
@@ -191,8 +203,10 @@ class UserController extends Controller
                 $response = ['success' => false, 'data' => 'Couldnt register user'];
             }
 
+            return response()->json($response, 201);
+
         }
 
-        return response()->json($response, 201);
+        
     }
 }

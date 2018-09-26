@@ -35,4 +35,5 @@ Route::group(['middleware' => 'api-header'], function () {
     Route::post('user/login', 'UserController@login');
     Route::post('user/register', 'UserController@register');
     Route::post('user/register/oauth', 'UserController@register_oauth'); 
+    Route::post('user/login/oauth', 'UserController@login_oauth'); 
 });
