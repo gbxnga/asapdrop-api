@@ -66,7 +66,7 @@ class RouteController extends Controller
     public function get_user_routes()
     {
         $user = JWTAuth::toUser($_GET['token']);
-        $routes = Routes::where('user_id', $user->id)->get();
+        $routes = Route::where('user_id', $user->id)->get();
         if($routes){
             $response = ['success' => true, 'message'=>"Routes fetched", 'data'=>$routes];
         }
