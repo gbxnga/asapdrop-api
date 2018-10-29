@@ -41,7 +41,7 @@ class RouteController extends Controller
     public function delete(Request $request)
     {
         $user = JWTAuth::toUser($request->token);
-        $route = Route::find($id);
+        $route = Route::find($request->id);
         if($route){
             // check if route belongs to user
             if ($route->user_id == $user->id){
