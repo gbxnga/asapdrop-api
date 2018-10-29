@@ -37,4 +37,29 @@ class RouteController extends Controller
 
         return response()->json($response, 200);
     }
+
+    public function delete(Request $request)
+    {
+        $user = JWTAuth::toUser($request->token);
+        $route = Route::find($id);
+        if($route){
+            // check if route belongs to user
+            if ($route->user_id == $user->id){
+
+                if ($route->delete()){
+                    $response = ['success' => true, 'message'=>"Route deleted"];
+                }else{
+                    $response = ['success' => true, 'message'=>"Could not delete route"];
+                }               
+
+            }else{
+                $response = ['success' => false, 'message'=>"Route does not belong to user"];
+            }          
+        }else{
+            $response = ['success' => false, 'message'=>"Route doesnt exist"];
+
+        }
+        return response()->json($response, 200);
+
+    }
 }
