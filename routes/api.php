@@ -25,7 +25,9 @@ Route::group(['middleware' => ['jwt.auth','api-header']], function () {
         
         $response = ['success'=>true, 'data'=>$users];
         return response()->json($response, 201);
-    });
+    });  
+    Route::post('user/add-route', 'RouteController@add');
+    Route::post('user/routes/all', 'RouteController@all');
 });
 Route::group(['middleware' => 'api-header'], function () {
   
@@ -35,5 +37,5 @@ Route::group(['middleware' => 'api-header'], function () {
     Route::post('user/login', 'UserController@login');
     Route::post('user/register', 'UserController@register');
     Route::post('user/register/oauth', 'UserController@register_oauth'); 
-    Route::post('user/login/oauth', 'UserController@login_oauth'); 
+    Route::post('user/login/oauth', 'UserController@login_oauth');  
 });

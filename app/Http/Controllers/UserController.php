@@ -11,11 +11,8 @@ class UserController extends Controller
 {
     private function getToken($email, $password)
     {
-        $token = null;
-        //$credentials = $request->only('email', 'password');
-        try {
-            //$e = compact('email','password');
-            //dd($e);
+        $token = null; 
+        try { 
             if (!$token = JWTAuth::attempt(compact('email', 'password'))) {
                 return response()->json([
                     'response' => 'error',
@@ -107,11 +104,7 @@ class UserController extends Controller
             exit;
         }
 
-        $me = $response->getGraphUser();
-        return $me;
-        //print_r($me);
-        //echo 'Logged in as ' . $me->getName();
-        //echo $me->getEmail();
+        return $response->getGraphUser(); 
     }
     public function login_oauth(Request $request)
     {
@@ -123,7 +116,7 @@ class UserController extends Controller
                 $info = self::verifyToken($request->oauth_token);
 
                 if (!is_object($info)) {
-                    return response()->json(['success' => false, 'data' => 'Facebook Could not verify token','error_message'=>$info], 201);
+                    return response()->json(['success' => false, 'data' => 'Facebook Could not verify token', 'error_message' => $info], 201);
                 } else {
                     // update record
                     $user->password = \Hash::make($info->getId());
@@ -134,13 +127,12 @@ class UserController extends Controller
                     //$user->photo =  $request->photo;
 
                     $user->save();
-                    
 
                     // login and return
                     $token = self::getToken($user->email, $info->getId()); // generate user token
-                    
+
                     if (!is_string($token)) {
-                        return response()->json(['email'=>$info->getEmail(),'id'=>$info->getId(),'user' => $user, 'success' => false, 'data' => 'Token generation failed'], 201);
+                        return response()->json(['email' => $info->getEmail(), 'id' => $info->getId(), 'user' => $user, 'success' => false, 'data' => 'Token generation failed'], 201);
                     }
 
                     $user = \App\User::where('email', $user->email)->get()->first();
@@ -153,14 +145,15 @@ class UserController extends Controller
 
                     return response()->json($response, 201);
 
-                    
-
                 }
 
             } catch (Exception $e) {
                 return response()->json(['success' => false, 'data' => 'Could not verify token'], 201);
             }
-        } else return response()->json(['success' => false, 'data' => 'user not registered'], 201);
+        } else {
+            return response()->json(['success' => false, 'data' => 'user not registered'], 201);
+        }
+
     }
     public function register_oauth(Request $request)
     {
@@ -169,7 +162,7 @@ class UserController extends Controller
         $user = User::where('oauth_uid', $request->oauth_uid)->get()->first();
         if ($user) {
 
-            return  self::login_oauth($request);
+            return self::login_oauth($request);
 
         } else {
             $payload = [
@@ -192,7 +185,7 @@ class UserController extends Controller
                     return response()->json(['user' => $user, 'success' => false, 'data' => 'Token generation failed'], 201);
                 }
 
-                $user = \App\User::where('email', $request->email)->get()->first();
+                $user = User::where('email', $request->email)->get()->first();
 
                 $user->auth_token = $token; // update user token
 
@@ -207,6 +200,5 @@ class UserController extends Controller
 
         }
 
-        
     }
 }
