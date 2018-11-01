@@ -201,4 +201,18 @@ class UserController extends Controller
         }
 
     }
+
+    public function update(Request $request)
+    {
+
+
+        $user = JWTAuth::toUser($request->token);
+        if ( $user->update($request->all()) ){
+            $response = ['success' => true, 'data' => $user, 'message'=>"Profile updated successfully"];
+        }else{
+            $response = ['success' => false, 'data' => $user, 'message'=>"Failed to update profile"];
+        }
+
+        return response()->json($response, 201);
+    }
 }
