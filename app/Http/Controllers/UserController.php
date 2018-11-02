@@ -215,4 +215,37 @@ class UserController extends Controller
 
         return response()->json($response, 201);
     }
+
+    public function upload_photo(Request $request)
+    {
+
+        $user = JWTAuth::toUser($request->token);
+
+        $image_name = ''; // default profile image
+
+        if ($request->hasFile('photo'))
+        {
+            $image = $request->file('photo');
+
+            $input['imagename'] = time().'.'.$image->getClientOriginalExtension();
+
+            $destinationPath = public_path('/uploads/profile-photos');
+
+            $image->move($destinationPath, $input['imagename']);
+
+            $image_name = $input['imagename'];
+
+            $user->photo = $image_name; /** Update image only if one was uploaded */
+
+            $user->save();
+
+            $response = ['success' => true, 'data' => $user, 'message'=>"Photo upload successfull"];
+        }  else {
+            $response = ['success' => false, 'data' => $user, 'message'=>"Photo upload failed"];
+        }
+
+        
+
+        return response()->json($response, 201);
+    }
 }
