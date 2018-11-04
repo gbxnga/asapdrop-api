@@ -27,3 +27,5 @@ Route::get('/claer', function () {
     // return what you want
     //Artisan::call('queue:listen');
 });
+
+Route::get('/bvn', 'UserController@bvn');
