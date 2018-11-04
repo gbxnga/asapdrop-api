@@ -32,6 +32,7 @@ Route::group(['middleware' => ['jwt.auth','api-header']], function () {
     Route::get('user/my-routes', 'RouteController@get_user_routes');
     Route::post('user/update-profile', 'UserController@update');
     Route::post('user/upload-photo', 'UserController@upload_photo');
+    Route::post('user/change-password', 'UserController@update_password');
 });
 Route::group(['middleware' => 'api-header'], function () {
   

@@ -202,6 +202,27 @@ class UserController extends Controller
 
     }
 
+    public function update_password(Request $request){
+
+        $user = JWTAuth::toUser($request->token);
+
+        if (\Hash::check($request->old_pass, $user->password)) {
+            
+            if ($request->new_pass === $request->new_pass_repeat)
+            {
+                $user->password = \Hash::make($request->new_pass);
+                $user->save();
+ 
+                $response = ['success' => true, 'data' => $user, 'message'=>"Success! Password successfully changed"];
+
+            } else $response = ['success' => false, 'data' => $user, 'message'=>"password repeat doesnt match"];
+            
+          
+        } else $response = ['success' => false, 'data' => $user, 'message'=>"Old password is wrong"];
+
+        return response()->json($response, 201);
+    }
+
     public function update(Request $request)
     {
 
