@@ -28,4 +28,4 @@ Route::get('/claer', function () {
     //Artisan::call('queue:listen');
 });
 
-Route::get('/bvn', 'UserController@bvn');
+

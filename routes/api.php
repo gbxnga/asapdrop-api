@@ -33,6 +33,9 @@ Route::group(['middleware' => ['jwt.auth','api-header']], function () {
     Route::post('user/update-profile', 'UserController@update');
     Route::post('user/upload-photo', 'UserController@upload_photo');
     Route::post('user/change-password', 'UserController@update_password');
+
+    Route::post('user/verify-bvn', 'UserController@verify_bvn');
+    Route::post('user/verify-code-sent-bvn', 'UserController@verify_sent_code_for_bvn');
 });
 Route::group(['middleware' => 'api-header'], function () {
   

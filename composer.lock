@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "81e9e67445c1e26d313a87c47f898de3",
+    "content-hash": "d9a92015114f49be02f28f43f36dd931",
     "packages": [
         {
             "name": "dnoegel/php-xdg-base-dir",
@@ -464,6 +464,65 @@
             ],
             "description": "A flutterwave php binding library",
             "time": "2018-05-13T19:03:50+00:00"
+        },
+        {
+            "name": "gbxnga/smart-sms-solutions",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/gbxnga/smart-sms-solutions.git",
+                "reference": "453c9c471b39eb7080c0c4b95bef3707d40887bf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/gbxnga/smart-sms-solutions/zipball/453c9c471b39eb7080c0c4b95bef3707d40887bf",
+                "reference": "453c9c471b39eb7080c0c4b95bef3707d40887bf",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.2",
+                "php": "~5.6|~7.0"
+            },
+            "require-dev": {
+                "guzzlehttp/guzzle": "^6.2",
+                "phpunit/phpunit": ">=5.4.3",
+                "squizlabs/php_codesniffer": "^2.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Gbxnga\\SmartSMSSolutions\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gbenga Oni",
+                    "email": "onigbenga@yahoo.ca",
+                    "homepage": "https://gbengaoni.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A PHP Package for smartsmssolution.com services",
+            "homepage": "https://github.com/gbxnga/smart-sms-solutions.git",
+            "keywords": [
+                "api",
+                "github",
+                "open source",
+                "php",
+                "smartsmssolutions",
+                "sms",
+                "sms api"
+            ],
+            "time": "2018-10-22T18:14:14+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -4756,8 +4815,9 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "tymon/jwt-auth": 20,
-        "flutterwave/flutterwave-php": 20
+        "flutterwave/flutterwave-php": 20,
+        "gbxnga/smart-sms-solutions": 20,
+        "tymon/jwt-auth": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

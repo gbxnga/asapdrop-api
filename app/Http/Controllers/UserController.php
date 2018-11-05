@@ -8,40 +8,115 @@ use JWTAuth;
 use JWTAuthException;
 //use Flutterwave\Bvn;
 //use Flutterwave\Flutterwave;
+use GuzzleHttp\Client;
+use App\VerifyBVN;
+use App\BVN;
+use Gbxnga\SmartSMSSolutions\SmartSMSSolutions;
 
 class UserController extends Controller
 {
-    public function bvn(){
-        
+    public function verify_sent_code_for_bvn(Request $request){
 
-        $curl = curl_init();
-        
-        curl_setopt_array($curl, array(
-          CURLOPT_URL => "https://api.gtbank.com/ValidateBVN",
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => "",
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 30,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_CUSTOMREQUEST => "POST",
-          CURLOPT_POSTFIELDS => "{\"Envelope\":{\"xmlns\":\"http://schemas.xmlsoap.org/soap/envelope/\",\"Body\":{\"ValidateBVN\":{\"xmlns\":\"http://tempuri.org/\",\"value\":\"22184019924\"}}}}",
-          CURLOPT_HTTPHEADER => array(
-            "accept: application/json",
-            "content-type: application/json",
-            "x-ibm-client-id: ad174319-6389-450e-b15f-16674824bc1b"
-          ),
-        ));
-        
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        
-        curl_close($curl);
-        
-        if ($err) {
-          echo "cURL Error #:" . $err;
-        } else {
-          echo $response;
+        $user = JWTAuth::toUser($request->token);
+
+        $verification = VerifyBVN::where('user_id', $user->id)->orderBy('created_at','DESC')->first(['code']);
+         
+        if( $verification->code == $request->code){
+
+            $verification->status = "verified";
+            $verification->save();
+
+            $user->bvn_verified = 'true';
+            $user->save();
+
+            $response = ['success' => true, 'data' => $user, 'message'=>"BVN verified"];
+        }else{
+            $response = ['success' => false, 'data' => $user, 'message'=>"Code doesnt match"];
         }
+
+        return response()->json($response, 200);
+
+    }
+    public function verify_bvn(Request $request){
+ 
+        $user = JWTAuth::toUser($request->token);
+        if( !empty($request->bvn) ){
+
+            $client = new Client();
+            $secretKey = "sk_live_adeb0a9c21710208095ff0c914209d652bcab7fb";
+    
+            $response = $client->request('GET', "https://api.paystack.co/bank/resolve_bvn/$request->bvn", [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $secretKey,
+                ],
+            ]);
+            if ($response->getStatusCode() == "200") {  
+    
+                $decoded_response = json_decode($response->getBody());
+                $person = $decoded_response->data;
+
+                $count = 0;
+                $code = '';
+                while ($count < 6)
+                {
+                    $code .= mt_rand(0,9);
+                    $count++;
+                };
+                $verification = new VerifyBVN([
+                    'bvn'=>$person->bvn,
+                    'user_id'=> $user->id,
+                    'phone' => $person->mobile,
+                    'code' => $code,
+                    // 'status'=>'unverified'
+                ]);
+                $verification->save();
+
+                $data = new BVN([
+                    'user_id'=> $user->id,
+                    'bvn'=>$person->bvn,
+                    'firstname' => $person->first_name,
+                    'lastname' => $person->last_name,
+                    'dob' => $person->dob,
+                    'mobile' => $person->mobile,
+                    'formatted_dob' =>$person->formatted_dob
+                ]);
+                $data->save(); 
+
+                // send code:
+
+                $sms = new SmartSMSSolutions("iamblizzyy@gmail.com","BetaGrades2018");
+                $sender = "ASAPDROP";
+                $recipient = $person->mobile;
+                $recipient = "08159229330";
+                $message = "Your ASAPDROP BVN verification code is: $code"; 
+                
+                //echo $sms->getBalance();
+
+                $sms_status = $sms->sendMessage($sender,$recipient,$message);
+
+                $response = [
+
+                            'success' => true, 
+                            'data' => 'Provide sent code', 
+                            'status'=>$decoded_response->status,
+                            'message' => $decoded_response->message,
+                            'follow_id' => $verification->id,
+                            'sent_to' => $person->mobile,
+                            'sms_status' => $sms_status
+                        ];
+            }
+            else{
+                $response = ['success' => false, 'data' => 'Cound not fetch BVN details'];
+            }
+
+        }else{
+            $response = ['success' => false, 'data' => 'BVN cannot be empty'];
+
+        }
+
+        return response()->json($response, 200);
+
+ 
     }
     private function getToken($email, $password)
     {
