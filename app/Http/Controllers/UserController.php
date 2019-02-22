@@ -15,6 +15,35 @@ use Gbxnga\SmartSMSSolutions\SmartSMSSolutions;
 
 class UserController extends Controller
 {
+    private function generateVerificationCode(): string 
+    {
+        $count = 0;
+        $code = '';
+        while ($count < 5) {
+            $code .= mt_rand(0, 9);
+            $count++;
+        }
+        return $code;
+    }
+    private function splitCodeAddComma(string $code)
+    {
+        $splittedString = '';
+        $array = str_split($code); 
+
+        foreach ($array as $char) {
+            $splittedString .= ', '. $char;
+        }
+        return $splittedString;
+
+    }
+    private function prefixNumber($number)
+    {
+
+        $truncated_number = substr($number, 1);
+        return "+234{$truncated_number}";
+        return "0{$truncated_number}";
+        //return "+234{$truncated_number}";
+    }
     public function verify_sent_code_for_bvn(Request $request){
 
         $user = JWTAuth::toUser($request->token);
@@ -54,14 +83,8 @@ class UserController extends Controller
     
                 $decoded_response = json_decode($response->getBody());
                 $person = $decoded_response->data;
-
-                $count = 0;
-                $code = '';
-                while ($count < 6)
-                {
-                    $code .= mt_rand(0,9);
-                    $count++;
-                };
+ 
+                $code = $this->generateVerificationCode();
                 $verification = new VerifyBVN([
                     'bvn'=>$person->bvn,
                     'user_id'=> $user->id,
@@ -117,6 +140,84 @@ class UserController extends Controller
         return response()->json($response, 200);
 
  
+    }
+
+
+    private function convertTextToSpeech(string $text){
+ 
+        $polly = \AWS::createClient('polly');
+        $result_polly = $polly->synthesizeSpeech([ 
+            "OutputFormat" => "mp3", 
+            "Text" => $text, 
+            "TextType" => "text", 
+            "VoiceId" => "Amy" ]);
+
+        $resultData_polly = $result_polly->get("AudioStream")->getContents();
+        $file_name = time()."-polly.mp3"; 
+
+        $s3 = \AWS::createClient('s3');
+        $result_s3 = $s3->putObject(array(
+            'Bucket'     => 'myaws-thread-to-speech-codes',
+            'Key'        => $file_name,
+            "ACL" => "public-read", 
+            "Body" => $resultData_polly, 
+            "ContentType" => "audio/mpeg"
+            //'SourceFile' => '/the/path/to/the/file/you/are/uploading.ext',
+        ));
+        return $file_name;
+        return $result_s3['ObjectURL'];
+
+    }
+
+    public function callPhone(Request $request)
+    {  
+        $user = JWTAuth::toUser($request->token);
+        if( !empty($request->bvn) ){
+
+            $twilio_number = env("TWILIO_NUMBER");
+
+            $data = BVN::where("bvn",$request->bvn)->get()->first();
+
+            $number_with_prefix = $this->prefixNumber($data->mobile);
+            $code = $this->generateVerificationCode();
+            $splittedCode = $this->splitCodeAddComma($code);
+
+            $message = "Hello. Your ASAP drop verification code is: {$splittedCode}. Again: {$splittedCode}. Goodbye.";
+
+            $file_name = $this->convertTextToSpeech($message);
+
+            $client = new TwilioClient(env("TWILIO_SID"), env("TWILIO_TOKEN"));
+            $client->account->calls->create(  
+                $number_with_prefix,
+                $twilio_number,
+                array( 
+                    "url" => "https://api.asapfoods.com.ng/get-voice-message/$file_name"
+                )
+            );
+
+            $verification = new VerifyBVN([
+                'bvn'=>$request->bvn,
+                'user_id'=> $user->id,
+                'phone' => $data->mobile,
+                'code' => $code,
+                // 'status'=>'unverified'
+            ]);
+            $verification->save();
+
+            return response()->json(["success"=>true, "name"=>$file_name], 200);
+        }
+        else return response()->json(["success"=>false, "request"=>$request], 200);
+
+        
+
+        //return response()->json(["success"=>true, "url"=>$file_name], 201);
+
+
+
+        //$sql = "INSERT INTO `sentcodes` (`phone`, `code`) VALUES ('{$number_with_prefix}', '{$code}');";
+        //$row = \DB::select($sql);
+
+        
     }
     private function getToken($email, $password)
     {
