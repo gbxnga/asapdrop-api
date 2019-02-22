@@ -53,6 +53,25 @@ return [
             'strict' => true,
             'engine' => null,
         ],
+        'aurora' => [
+            'driver' => 'mysql',
+            'read' => [
+                'host' => env('AURORA_DB_HOST_READ', '127.0.0.1'),
+            ],
+            'write' => [
+                'host' => env('AURORA_DB_HOST_WRITE', '127.0.0.1'),
+            ], 
+            'port' => env('AURORA_DB_PORT', '3306'),
+            'database' => env('AURORA_DB_DATABASE', 'forge'),
+            'username' => env('AURORA_DB_USERNAME', 'forge'),
+            'password' => env('AURORA_DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
 
         'pgsql' => [
             'driver' => 'pgsql',
